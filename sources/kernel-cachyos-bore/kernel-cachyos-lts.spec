@@ -9,6 +9,9 @@
 %undefine _auto_set_build_flags
 %undefine _include_frame_pointers
 
+# Signing Key
+%{!?_custom_sig_key:%define _custom_sig_key %(echo $HOME)/.kernel-keys/signing_key.pem}
+
 # Linux Kernel Versions
 %define _basekver 6.18
 %define _stablekver 52
@@ -183,6 +186,18 @@ Patch10:        %{_patch_src}/misc/nvidia/0001-Enable-atomic-kernel-modesetting-
     scripts/config -e CONFIG_IMA_APPRAISE_BOOTPARAM
     scripts/config -e CONFIG_IMA_APPRAISE
     scripts/config -e CONFIG_IMA_ARCH_POLICY
+
+    # Configure persistent kernel module signing
+    %if %{defined _custom_sig_key}
+        # Copy the key into the build certs directory
+        cp %{_custom_sig_key} certs/persistent_signing_key.pem
+
+        scripts/config -e MODULE_SIG
+        scripts/config -e MODULE_SIG_ALL
+        scripts/config -e MODULE_SIG_SHA256
+        scripts/config --set-str MODULE_SIG_KEY "certs/persistent_signing_key.pem"
+        scripts/config --set-str SYSTEM_TRUSTED_KEYS "certs/persistent_signing_key.pem"
+    %endif
 
     %if %{_build_lto}
         scripts/config -e LTO_CLANG_THIN
