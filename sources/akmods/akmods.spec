@@ -1,12 +1,16 @@
 %define _disable_source_fetch 0
 
 Name:           akmods
-Version:        0.6.0
+Version:        0.6.2
 Release:        21%{?dist}
 Summary:        Automatic kmods build and install tool
 
 License:        MIT
 URL:            http://rpmfusion.org/Packaging/KernelModules/Akmods
+
+# Satisfy RPM automatic user/group dependency generation
+Provides:       user(akmods)
+Provides:       group(akmods)
 
 # We are upstream, these files are maintained directly in pkg-git
 Source0:        https://github.com/1Naim/akmods/archive/refs/tags/%{version}.tar.gz
@@ -110,8 +114,7 @@ install -pm 0755 %{_builddir}/%{name}-%{version}/95-akmodsposttrans.install %{bu
 mkdir -p \
          %{buildroot}%{_unitdir} \
          %{buildroot}%{_presetdir}
-sed "s|@SERVICE@|display-manager.service|" %{_builddir}/%{name}-%{version}/akmods.service.in >\
-    %{buildroot}%{_unitdir}/akmods.service
+install -pm 0644 %{_builddir}/%{name}-%{version}/akmods.service %{buildroot}%{_unitdir}/
 install -pm 0644 %{_builddir}/%{name}-%{version}/95-akmods.preset %{buildroot}%{_presetdir}/
 install -pm 0755 %{_builddir}/%{name}-%{version}/akmods-shutdown %{buildroot}%{_sbindir}/
 install -pm 0644 %{_builddir}/%{name}-%{version}/akmods-shutdown.service %{buildroot}%{_unitdir}/

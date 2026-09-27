@@ -15,7 +15,7 @@ diff --git a/akmods b/akmods
 index b0ed55f..6c90500 100644
 --- a/akmods
 +++ b/akmods
-@@ -292,6 +292,7 @@ buildinstall_kmod()
+@@ -323,6 +323,7 @@ buildinstall_kmod()
  	local this_kmodname=${2}
  	local this_kmodsrpm=${3}
  	local this_kmodverrel=${4}
@@ -23,7 +23,7 @@ index b0ed55f..6c90500 100644
  
  	if [[ ! -r "${this_kmodsrpm}" ]] ; then
  		akmods_echo 2 1 "ERROR: ${this_kmodsrpm} not found."
-@@ -323,6 +324,16 @@ buildinstall_kmod()
+@@ -354,6 +355,16 @@ buildinstall_kmod()
  		return 1
  	fi
  
@@ -73,19 +73,18 @@ index 517e1b3..524a07d 100644
  	echo "Building ${srpm} for kernel ${kernel}"
  	# Note: This builds as root, but this is pretty safe because its happening in the ostree %post sandbox.
  	#       In fact, given that /usr is a rofiles-fuse mount no other user can access /usr in this sandbox anyway.
--	akmodsbuild --quiet --kernels ${kernel} --outputdir ${tmpdir}results --logfile "${tmpdir}/akmodsbuild.log" "${srpm}"  2>&1
+-	akmodsbuild --quiet --kernels "${kernel}" --outputdir "${tmpdir}results" --logfile "${tmpdir}/akmodsbuild.log" "${srpm}"  2>&1
 +	if [ -e "$kernel_config" ]; then
 +		if grep -q CONFIG_CC_IS_CLANG=y "$kernel_config"; then
-+			env CC=clang CXX=clang++ LD=ld.lld LLVM=1 LLVM_IAS=1 akmodsbuild --quiet --kernels ${kernel} --outputdir ${tmpdir}results --logfile "${tmpdir}/akmodsbuild.log" "${srpm}"  2>&1
++			env CC=clang CXX=clang++ LD=ld.lld LLVM=1 LLVM_IAS=1 akmodsbuild --quiet --kernels "${kernel}" --outputdir "${tmpdir}results" --logfile "${tmpdir}/akmodsbuild.log" "${srpm}"  2>&1
 +		else
-+			akmodsbuild --quiet --kernels ${kernel} --outputdir ${tmpdir}results --logfile "${tmpdir}/akmodsbuild.log" "${srpm}"  2>&1
++			akmodsbuild --quiet --kernels "${kernel}" --outputdir "${tmpdir}results" --logfile "${tmpdir}/akmodsbuild.log" "${srpm}"  2>&1
 +		fi
 +	else
-+		akmodsbuild --quiet --kernels ${kernel} --outputdir ${tmpdir}results --logfile "${tmpdir}/akmodsbuild.log" "${srpm}"  2>&1
++		akmodsbuild --quiet --kernels "${kernel}" --outputdir "${tmpdir}results" --logfile "${tmpdir}/akmodsbuild.log" "${srpm}"  2>&1
 +	fi
  	returncode=$?
- 	if (( ! ${returncode} == 0 )); then
+ 	if (( returncode != 0 )); then
  		finally 1
 -- 
 2.48.0
-
